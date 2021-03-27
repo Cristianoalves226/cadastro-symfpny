@@ -2,13 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Usuario;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/api/v1",name="api_v1_usuario_")
+ *@Route("/",name="web_usuario_") 
  */
-class UsuarioController
+class UsuarioController extends AbstractController
 {
 
     /**
@@ -16,14 +19,41 @@ class UsuarioController
      *  */
     public function index(): Response
     {
-        return new Response("Implementar formulario de cadastro");
+        return $this->render("usuario/form.html.twig");
     }
 
     /**
      * @Route("/salvar", methods={"POST"},name="salvar")
      *  */
-    public function salvar(): Response
+    public function salvar(Request $request): Response
     {
+        $data = $request->request->all();
+
+        $usuario = new Usuario;
+        $usuario->setNome($data['nome']);
+        $usuario->setEmail($data['email']);
+
+        \dump($usuario);
+
+        $doctrine = $this->getDoctrine()->getManager();
+        $doctrine->persist($usuario);
+        $doctrine->flush();
+
+        \dump($usuario);
+
+        if ($doctrine->contains($usuario)) {
+            return $this->render(
+                'usuario/sucesso.html.twig',
+                [
+                    "fulano" => $data['nome']
+                ]
+            );
+        } else {
+            return $this->render('usuario/sucesso.html.twig', [
+                'fulano' => $data['nome']
+            ]);
+        }
+
         return new Response("Implementar gravação banco de dados");
     }
 }
